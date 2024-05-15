@@ -18,7 +18,7 @@ public abstract class MixinChatHud {
 
     @Inject(method = "addMessage(Lnet/minecraft/text/Text;IIZ)V", at = @At("HEAD"))
     private void sendRespect(Text message, int messageId, int timestamp, boolean bl, CallbackInfo ci) {
-        Event event = AutoTechno.detector.scanForEvent(message.getString());
+        Event event = AutoTechno.detector.scanForEvent(message.asUnformattedString());
 
         if (event != null) {
             if (System.currentTimeMillis() - lastTime <= Integer.parseInt((String) AutoTechnoConfig.getProperty("MessageWaitTime"))) return;
