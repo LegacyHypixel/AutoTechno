@@ -1,18 +1,17 @@
 package codes.ztereohype.autotechno.config;
 
+import codes.ztereohype.autotechno.AutoTechno;
+import com.esotericsoftware.yamlbeans.SafeYamlConfig;
 import com.esotericsoftware.yamlbeans.YamlReader;
 import com.esotericsoftware.yamlbeans.YamlWriter;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Paths;
+import java.io.*;
+import java.nio.file.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class AutoTechnoConfig {
-    private static final File CONFIG_FILE = Paths.get("config/autotechno.yml").toFile();
+    private static final Path CONFIG_FILE = Paths.get("config", "autotechno.yml");
 
     private static final Map<String, Object> DEFAULT_CONFIG = new LinkedHashMap<String, Object>() {{
         put("SendEndMessages", true);
@@ -42,57 +41,59 @@ public class AutoTechnoConfig {
 
     private static Map<String, Object> CONFIG = new LinkedHashMap<>();
 
-    public static void init() {
-        try {
-            if (CONFIG_FILE.exists()) {
-                YamlReader reader = new YamlReader(new FileReader(CONFIG_FILE));
-
-                CONFIG = (Map<String, Object>) reader.read();
-                reader.close();
-
-                if (!CONFIG.keySet().equals(DEFAULT_CONFIG.keySet())) {
-                    updateConfig();
-                }
-            } else {
-                CONFIG_FILE.getParentFile().mkdirs();
-                CONFIG_FILE.createNewFile();
-
-                YamlWriter writer = new YamlWriter(new FileWriter(CONFIG_FILE));
-
-                writer.write(DEFAULT_CONFIG);
-                writer.close();
-
-                init();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static Object getProperty(String property) {
         return CONFIG.get(property);
     }
 
-    private static void updateConfig() {
+    @SuppressWarnings("unchecked")
+    public static void init() {
+        Map<String, Object> config = null;
+
+        // try reading config
+        if (Files.isRegularFile(CONFIG_FILE)) {
+            try (YamlReader reader = new YamlReader(Files.newBufferedReader(CONFIG_FILE), new SafeYamlConfig())) {
+                config = (Map<String, Object>) reader.read(Map.class, Object.class);
+
+                // update config file keys
+                if (config != null) {
+                    for (Map.Entry<String, Object> entry : DEFAULT_CONFIG.entrySet()) {
+                        config.putIfAbsent(entry.getKey(), entry.getValue());
+                    }
+                    writeConfig(config);
+                }
+            } catch (IOException e) {
+                AutoTechno.LOGGER.error("Error reading config file.", e);
+            }
+        }
+
+        // if no config, use & write default
+        if (config == null) {
+            config = DEFAULT_CONFIG;
+
+            try {
+                Files.createDirectories(CONFIG_FILE.getParent());
+                writeConfig(config);
+            } catch (IOException e) {
+                AutoTechno.LOGGER.error("Error creating config file.", e);
+            }
+        }
+
+        CONFIG = config;
+    }
+
+    private static void writeConfig(Map<String, Object> config) {
         try {
-            CONFIG_FILE.delete();
-            CONFIG_FILE.createNewFile();
+            Path tempFile = Files.createTempFile("autotechno", "config");
 
-            YamlWriter writer = new YamlWriter(new FileWriter(CONFIG_FILE));
-
-            Map<String, Object> updatedConfig = new LinkedHashMap<>();
-
-            for (String key : DEFAULT_CONFIG.keySet()) {
-                Object property = getProperty(key);
-                updatedConfig.put(key, property == null ? DEFAULT_CONFIG.get(key) : property);
+            try (YamlWriter writer = new YamlWriter(Files.newBufferedWriter(tempFile), new SafeYamlConfig())) {
+                writer.write(config);
             }
 
-            writer.write(updatedConfig);
-            writer.close();
-
-            init();
+            try (InputStream in = Files.newInputStream(tempFile)) {
+                Files.copy(in, CONFIG_FILE, StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            AutoTechno.LOGGER.error("Error writing config file.", e);
         }
     }
 }
