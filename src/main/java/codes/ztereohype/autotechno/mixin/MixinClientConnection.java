@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientConnection.class)
 public class MixinClientConnection {
-    @Inject(method = "disconnect", at = @At("HEAD"))
+    @Inject(method = "disconnect", at = @At("HEAD"), require = 0)
     private void onDisconnect(Text disconnectReason, CallbackInfo ci) {
         if (AutoTechno.client.getCurrentServer() == Server.MINEPLEX) {
             EventDetector.mineplexStart = false;

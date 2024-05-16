@@ -1,6 +1,6 @@
 {
   "required": true,
-  "minVersion": "0.8.5",
+  "minVersion": "0.8",
   "package": "codes.ztereohype.autotechno.mixin",
   "compatibilityLevel": "JAVA_8",
   "client": [
