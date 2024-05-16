@@ -4,42 +4,48 @@ import codes.ztereohype.autotechno.AutoTechno;
 import com.esotericsoftware.yamlbeans.SafeYamlConfig;
 import com.esotericsoftware.yamlbeans.YamlReader;
 import com.esotericsoftware.yamlbeans.YamlWriter;
+import com.google.common.collect.ImmutableMap;
 
-import java.io.*;
-import java.nio.file.*;
-import java.util.LinkedHashMap;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 public class AutoTechnoConfig {
     private static final Path CONFIG_FILE = Paths.get("config", "autotechno.yml");
 
-    private static final Map<String, Object> DEFAULT_CONFIG = new LinkedHashMap<String, Object>() {{
-        put("SendEndMessages", true);
-        put("SendStartMessages", true);
-        put("SendKillMessages", true);
-        put("MessageWaitTime", 3000);
-        put("EndMessages", new String[]{"gg e z",
-                "good game",
-                "Rest in Peace Technoblade",
-                "Technoblade never dies",
-                "so long nerds",
-                "as Sun Tzu wanted"});
-        put("StartMessages", new String[]{"Good luck, and may Techno's unmatched skill be with you",
-                "RIP Techno, you will be missed.",
-                "Let's drop kick some children!",
-                "Technoblade never dies!",
-                "So, what do you guys know about anarchy?"});
-        put("KillMessages", new String[]{"Blood for the Blood God",
-                "In the name of techno",
-                "This ones for technoblade",
-                "Officer, I drop-kicked them in self defense!",
-                "This is the second-worst thing to happen to these orphans.",
-                "Sometimes it's tough being the best",
-                "die nerd (/j)",
-                "chin up king, your crown is falling"});
-    }};
+    private static final Map<String, Object> DEFAULT_CONFIG = ImmutableMap.<String, Object>builder()
+            .put("SendEndMessages", true)
+            .put("SendStartMessages", true)
+            .put("SendKillMessages", true)
+            .put("MessageWaitTime", 3000)
+            .put("EndMessages", Arrays.asList("gg e z",
+                    "good game",
+                    "Rest in Peace Technoblade",
+                    "Technoblade never dies",
+                    "so long nerds",
+                    "as Sun Tzu wanted"))
+            .put("StartMessages", Arrays.asList("Good luck, and may Techno's unmatched skill be with you",
+                    "RIP Techno, you will be missed.",
+                    "Let's drop kick some children!",
+                    "Technoblade never dies!",
+                    "So, what do you guys know about anarchy?"))
+            .put("KillMessages", Arrays.asList("Blood for the Blood God",
+                    "In the name of techno",
+                    "This ones for technoblade",
+                    "Officer, I drop-kicked them in self defense!",
+                    "This is the second-worst thing to happen to these orphans.",
+                    "Sometimes it's tough being the best",
+                    "die nerd (/j)",
+                    "chin up king, your crown is falling"))
+            .build();
 
-    private static Map<String, Object> CONFIG = new LinkedHashMap<>();
+    private static Map<String, Object> CONFIG = Collections.emptyMap();
 
     public static Object getProperty(String property) {
         return CONFIG.get(property);

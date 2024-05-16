@@ -3,21 +3,20 @@ package codes.ztereohype.autotechno.chat;
 import codes.ztereohype.autotechno.AutoTechno;
 import codes.ztereohype.autotechno.client.Server;
 import codes.ztereohype.autotechno.config.AutoTechnoConfig;
+import net.minecraft.client.MinecraftClient;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class EventDetector {
     public static boolean mineplexStart = false;
-    private final Map<Server, Map<String, Event>> serverMessageEvents = new HashMap<Server, Map<String, Event>>() {{
-        put(Server.HYPIXEL, new HashMap<>());
-        put(Server.BEDWARS_PRACTICE, new HashMap<>());
-        put(Server.PVPLAND, new HashMap<>());
-        put(Server.MINEMEN, new HashMap<>());
-        put(Server.MINEPLEX, new HashMap<>());
-    }};
+    private final Map<Server, List<Pair<Supplier<String>, Event>>> serverMessageEvents = new EnumMap<>(Server.class);
 
     private final boolean killMessages;
     private final boolean startMessages;
@@ -31,62 +30,69 @@ public class EventDetector {
     }
 
     private void initTable() {
-        // END STRINGS
-        serverMessageEvents.get(Server.HYPIXEL).put("Your Overall Winstreak:", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put("1st Place -", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put("1st Killer -", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put(" - Damage Dealt -", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put("Winning Team -", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put("1st -", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put("Winners:", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put("Winner:", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put("Winning Team:", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put(" won the game!", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put("Top Seeker:", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put("1st Place:", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put("Last team standing!", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put("Winner #1 (", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put("Top Survivors", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put("Winners -", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put("Sumo Duel -", Event.END_GAME);
-        serverMessageEvents.get(Server.HYPIXEL).put("Most Wool Placed -", Event.END_GAME);
+        serverMessageEvents.put(Server.HYPIXEL, Arrays.asList(
+                Pair.of(() -> "Your Overall Winstreak:", Event.END_GAME),
+                Pair.of(() -> "1st Place -", Event.END_GAME),
+                Pair.of(() -> "1st Killer -", Event.END_GAME),
+                Pair.of(() -> " - Damage Dealt -", Event.END_GAME),
+                Pair.of(() -> "Winning Team -", Event.END_GAME),
+                Pair.of(() -> "1st -", Event.END_GAME),
+                Pair.of(() -> "Winners:", Event.END_GAME),
+                Pair.of(() -> "Winner:", Event.END_GAME),
+                Pair.of(() -> "Winning Team:", Event.END_GAME),
+                Pair.of(() -> " won the game!", Event.END_GAME),
+                Pair.of(() -> "Top Seeker:", Event.END_GAME),
+                Pair.of(() -> "1st Place:", Event.END_GAME),
+                Pair.of(() -> "Last team standing!", Event.END_GAME),
+                Pair.of(() -> "Winner #1 (", Event.END_GAME),
+                Pair.of(() -> "Top Survivors", Event.END_GAME),
+                Pair.of(() -> "Winners -", Event.END_GAME),
+                Pair.of(() -> "Sumo Duel -", Event.END_GAME),
+                Pair.of(() -> "Most Wool Placed -", Event.END_GAME),
 
-        serverMessageEvents.get(Server.BEDWARS_PRACTICE).put("Winners -", Event.END_GAME);
-        serverMessageEvents.get(Server.BEDWARS_PRACTICE).put("Game Won!", Event.END_GAME);
-        serverMessageEvents.get(Server.BEDWARS_PRACTICE).put("Game Lost!", Event.END_GAME);
-        serverMessageEvents.get(Server.BEDWARS_PRACTICE).put("The winning team is", Event.END_GAME);
+                Pair.of(() -> "The game starts in 1 second!", Event.START_GAME),
 
-        serverMessageEvents.get(Server.PVPLAND).put("The match has ended!", Event.END_GAME);
-        serverMessageEvents.get(Server.PVPLAND).put("Match Results", Event.END_GAME);
-        serverMessageEvents.get(Server.PVPLAND).put("Winner:", Event.END_GAME);
-        serverMessageEvents.get(Server.PVPLAND).put("Loser:", Event.END_GAME);
+                Pair.of(() -> "SkyWars Experience (Kill)", Event.KILL),
+                Pair.of(() -> "coins! (Final Kill)", Event.KILL)
+        ));
 
-        serverMessageEvents.get(Server.MINEMEN).put("Match Results", Event.END_GAME);
+        serverMessageEvents.put(Server.BEDWARS_PRACTICE, Arrays.asList(
+                Pair.of(() -> "Winners -", Event.END_GAME),
+                Pair.of(() -> "Game Won!", Event.END_GAME),
+                Pair.of(() -> "Game Lost!", Event.END_GAME),
+                Pair.of(() -> "The winning team is", Event.END_GAME),
 
-        serverMessageEvents.get(Server.MINEPLEX).put("Chat> Chat is no longer silenced.", Event.END_GAME);
+                Pair.of(() -> "Game starting in 1 seconds!", Event.END_GAME),
+                Pair.of(() -> "Game has started!", Event.END_GAME),
 
-        // START STRINGS
-        serverMessageEvents.get(Server.HYPIXEL).put("The game starts in 1 second!", Event.START_GAME);
+                Pair.of(() -> MinecraftClient.getInstance().getSession().getUsername() + " FINAL KILL!", Event.KILL)
+        ));
 
-        serverMessageEvents.get(Server.BEDWARS_PRACTICE).put("Game starting in 1 seconds!", Event.START_GAME);
-        serverMessageEvents.get(Server.BEDWARS_PRACTICE).put("Game has started!", Event.START_GAME);
+        serverMessageEvents.put(Server.PVPLAND, Arrays.asList(
+                Pair.of(() -> "The match has ended!", Event.END_GAME),
+                Pair.of(() -> "Match Results", Event.END_GAME),
+                Pair.of(() -> "Winner:", Event.END_GAME),
+                Pair.of(() -> "Loser:", Event.END_GAME),
 
-        serverMessageEvents.get(Server.PVPLAND).put("The match is starting in 1 second.", Event.START_GAME);
-        serverMessageEvents.get(Server.PVPLAND).put("The match has started!", Event.START_GAME);
+                Pair.of(() -> "The match is starting in 1 second.", Event.START_GAME),
+                Pair.of(() -> "The match has started!", Event.START_GAME),
 
-        serverMessageEvents.get(Server.MINEMEN).put("1...", Event.START_GAME);
+                Pair.of(() -> "slain by " + MinecraftClient.getInstance().getSession().getUsername(), Event.KILL)
+        ));
 
-        // KILL STRINGS
-        serverMessageEvents.get(Server.HYPIXEL).put("SkyWars Experience (Kill)", Event.KILL);
-        serverMessageEvents.get(Server.HYPIXEL).put("coins! (Final Kill)", Event.KILL);
+        serverMessageEvents.put(Server.MINEMEN, Arrays.asList(
+                Pair.of(() -> "Match Results", Event.END_GAME),
 
-        serverMessageEvents.get(Server.BEDWARS_PRACTICE).put(AutoTechno.client.getClient().getSession().getUsername() + " FINAL KILL!", Event.KILL);
+                Pair.of(() -> "1...", Event.START_GAME),
 
-        serverMessageEvents.get(Server.PVPLAND).put("slain by " + AutoTechno.client.getClient().getSession().getUsername(), Event.KILL);
+                Pair.of(() -> "killed by " + MinecraftClient.getInstance().getSession().getUsername() + "!", Event.KILL)
+        ));
 
-        serverMessageEvents.get(Server.MINEMEN).put("killed by " + AutoTechno.client.getClient().getSession().getUsername() + "!", Event.KILL);
+        serverMessageEvents.put(Server.MINEPLEX, Arrays.asList(
+                Pair.of(() -> "Chat> Chat is no longer silenced.", Event.END_GAME),
 
-        serverMessageEvents.get(Server.MINEPLEX).put("Death> You killed", Event.KILL);
+                Pair.of(() -> "Death> You killed", Event.KILL)
+        ));
     }
 
     public @Nullable Event scanForEvent(@NotNull String message) {
@@ -101,9 +107,9 @@ public class EventDetector {
             }
         }
 
-        for (String s : serverMessageEvents.get(server).keySet()) {
-            if (message.contains(s)) {
-                Event event = serverMessageEvents.get(server).get(s);
+        for (Pair<Supplier<String>, Event> pair : serverMessageEvents.get(server)) {
+            if (message.contains(pair.getLeft().get())) {
+                Event event = pair.getRight();
 
                 if (server == Server.MINEPLEX && event == Event.END_GAME) {
                     mineplexStart = !mineplexStart;

@@ -2,15 +2,16 @@ package codes.ztereohype.autotechno.chat;
 
 import codes.ztereohype.autotechno.config.AutoTechnoConfig;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 public class MessageRandomiser {
     private static final Random RANDOM = new Random();
-    private final Map<Event, List<String>> messagesMap = new HashMap<>();
+    private final Map<Event, List<String>> messagesMap = new EnumMap<>(Event.class);
 
+    @SuppressWarnings("unchecked")
     public MessageRandomiser() {
         messagesMap.put(Event.START_GAME, (List<String>) AutoTechnoConfig.getProperty("StartMessages"));
         messagesMap.put(Event.END_GAME, (List<String>) AutoTechnoConfig.getProperty("EndMessages"));

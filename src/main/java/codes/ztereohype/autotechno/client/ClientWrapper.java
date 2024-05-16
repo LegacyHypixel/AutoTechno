@@ -12,10 +12,6 @@ public class ClientWrapper {
         this.client = MinecraftClient.getInstance();
     }
 
-    public MinecraftClient getClient() {
-        return this.client;
-    }
-
     public @Nullable Server getCurrentServer() {
         if (client.getCurrentServerEntry() == null) return null;
         String address = client.getCurrentServerEntry().address;
